@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wren &amp; Martin — Student Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/shared.css">
+<style>
+/* ── Layout ── */
+.sbar{display:flex;flex-wrap:wrap;gap:.35rem;justify-content:center;padding:.55rem 1rem;background:#1e160d;color:#c4b090;font-family:'JetBrains Mono',monospace;font-size:.72rem}
+.si{background:rgba(184,134,11,.15);border:1px solid rgba(184,134,11,.3);border-radius:4px;padding:.16rem .5rem}
+.leg{display:flex;flex-wrap:wrap;gap:.55rem;justify-content:center;padding:.55rem 1rem;background:var(--cream);border-bottom:1px solid #ddd0c0;font-size:.75rem;font-family:'JetBrains Mono',monospace}
+.ld{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+.li{display:flex;align-items:center;gap:.28rem}
+
+/* ── Search bar ── */
+#sw{background:rgba(253,248,241,.97);padding:.55rem 1.25rem;border-bottom:2px solid var(--gold);position:sticky;top:51px;z-index:300;backdrop-filter:blur(8px);display:flex;gap:.5rem;align-items:center}
+#sr{flex:1;padding:.52rem .88rem;font-family:'Source Serif 4',serif;font-size:.92rem;border:2px solid var(--gold);border-radius:6px;background:var(--paper);color:var(--ink);outline:none}
+#sr:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(26,96,96,.14)}
+#clear-btn{font-family:'JetBrains Mono',monospace;font-size:.7rem;padding:.4rem .7rem;background:var(--cream);border:1px solid #c0b0a0;border-radius:5px;cursor:pointer;color:var(--ink);white-space:nowrap}
+#clear-btn:hover{background:var(--gold);color:#fff}
+
+/* ── TOC ── */
+#toc{position:sticky;top:103px;z-index:299;background:rgba(253,248,241,.97);backdrop-filter:blur(6px);border-bottom:1px solid #ddd0c0;padding:.38rem .9rem;overflow-x:auto;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:.69rem;display:flex;gap:.22rem;align-items:center;scrollbar-width:thin}
+#toc .tl{color:var(--gold);font-weight:700;flex-shrink:0;margin-right:.2rem}
+#toc a{color:var(--ink);text-decoration:none;padding:.16rem .36rem;border-radius:3px;flex-shrink:0;transition:background .1s,color .1s}
+#toc a:hover{background:var(--ink);color:var(--paper)}
+#toc a.done{background:rgba(26,92,26,.15);color:var(--green)}
+
+/* ── Chapter pills ── */
+.chapter-filter{
+  display:flex;flex-wrap:wrap;gap:.4rem;padding:.7rem 1.25rem;
+  background:var(--cream);border-bottom:1px solid #ddd0c0;
+  font-family:'JetBrains Mono',monospace;font-size:.7rem;
+  position:sticky;top:140px;z-index:298;backdrop-filter:blur(6px);
+}
+.cpill{
+  padding:.22rem .65rem;border-radius:20px;cursor:pointer;border:1px solid;
+  transition:all .14s;white-space:nowrap;
+}
+.cpill.all{background:var(--ink);color:var(--goldl);border-color:var(--ink)}
+.cpill.hw{background:rgba(184,134,11,.08);color:var(--gold);border-color:rgba(184,134,11,.3)}
+.cpill.hw:hover,.cpill.hw.active{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+
+/* ── Main content ── */
+main{max-width:880px;margin:0 auto;padding:1.6rem 1.25rem 5rem}
+
+/* ── No results ── */
+#no-results{display:none;text-align:center;padding:3rem;color:#7a6a5a;font-style:italic}
+#no-results.show{display:block}
+
+/* ── Chapter header ── */
+.chapter-banner{
+  background:var(--ink);color:var(--paper);
+  padding:.65rem 1rem;margin-bottom:1.5rem;margin-top:1rem;
+  border-radius:8px;font-family:'Playfair Display',serif;
+  font-size:1.1rem;display:flex;align-items:center;gap:.6rem;
+  border-left:5px solid var(--gold);
+}
+.chapter-banner .cn{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--goldl)}
+
+/* ── Stats bar ── */
+.stats-bar{
+  display:flex;gap:1rem;flex-wrap:wrap;padding:.6rem 1.25rem;
+  background:rgba(26,96,96,.05);border-bottom:1px solid rgba(26,96,96,.1);
+  font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--teal);
+}
+.stat{display:flex;align-items:center;gap:.3rem}
+.stat strong{color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="brand">
+    📚 <span>Wren &amp; Martin — Grammar Portal</span>
+  </div>
+  <div class="user-info">
+    <span>👤 <span id="username-display">Student</span></span>
+    <button class="logout-btn" onclick="logout()">⬅ Logout</button>
+  </div>
+</div>
+
+<!-- Stat bar -->
+<div class="sbar">
+  <span class="si">📚 267 Homework Sections</span>
+  <span class="si">✅ 3187 Q&amp;A</span>
+  <span class="si">⚡ Every Answer + Grammar Rule</span>
+  <span class="si">🔍 Full Search</span>
+  <span class="si">👆 Click to Reveal</span>
+</div>
+
+<!-- Legend -->
+<div class="leg">
+  <div class="li"><div class="ld" style="background:#e8ddd0;border:1px solid #b09878"></div>Question</div>
+  <div class="li"><div class="ld" style="background:#c8e6c9;border:1px solid #1a5c1a"></div>Answer</div>
+  <div class="li"><div class="ld" style="background:#fff3cd;border:1px solid #b8860b"></div>Grammar Rule</div>
+</div>
+
+<!-- Search -->
+<div id="sw">
+  <input id="sr" type="text" placeholder="🔍 Search any word, sentence or HW number..." oninput="ds(this.value)">
+  <button id="clear-btn" onclick="clearSearch()">✕ Clear</button>
+</div>
+
+<!-- TOC -->
+<div id="toc"><span class="tl">Jump →</span><span id="toc-links"></span></div>
+
+<!-- Chapter filter -->
+<div class="chapter-filter" id="chapter-filter">
+  <span class="cpill all" onclick="filterChapter('all',this)">📖 All Chapters</span>
+</div>
+
+<!-- Main content -->
+<main id="main-content">
+  <div id="no-results">No questions found. Try a different search term.</div>
+</main>
+
+<footer>
+  <p>Wren &amp; Martin &mdash; <span>High School English Grammar &amp; Composition</span></p>
+  <p style="margin-top:.32rem">HW #63 → HW #329 &bull; 267 sections &bull; 3187 answers with grammar rules</p>
+</footer>
+<button id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Top">↑</button>
+
+<script src="../js/exercises_data.js"></script>
+<script src="../js/shared.js"></script>
+<script>
+// ── Auth check ────────────────────────────────────────────────
+const username = requireRole('student');
+if (username) document.getElementById('username-display').textContent = username;
+
+// ── Chapter definitions (group HW numbers) ────────────────────
+const CHAPTERS = [
+  { name:'Subject & Predicate',   start:63,  end:69  },
+  { name:'Parts of Speech',       start:70,  end:89  },
+  { name:'Nouns & Pronouns',      start:90,  end:119 },
+  { name:'Adjectives',            start:120, end:139 },
+  { name:'Verbs & Tenses',        start:140, end:179 },
+  { name:'Adverbs',               start:180, end:199 },
+  { name:'Prepositions',          start:200, end:219 },
+  { name:'Conjunctions',          start:220, end:239 },
+  { name:'Sentences & Clauses',   start:240, end:269 },
+  { name:'Direct & Indirect',     start:270, end:289 },
+  { name:'Active & Passive',      start:290, end:309 },
+  { name:'Composition & Essays',  start:310, end:329 },
+];
+
+// ── Build TOC links ────────────────────────────────────────────
+const tocEl = document.getElementById('toc-links');
+WM_DATA.forEach(function(sec) {
+  var a = document.createElement('a');
+  a.href = '#' + sec.id;
+  a.textContent = '#' + sec.num;
+  a.title = sec.title;
+  tocEl.appendChild(a);
+});
+
+// ── Build chapter filter pills ─────────────────────────────────
+const cfEl = document.getElementById('chapter-filter');
+CHAPTERS.forEach(function(ch, i) {
+  var pill = document.createElement('span');
+  pill.className = 'cpill hw';
+  pill.textContent = ch.name + ' (#' + ch.start + '–' + ch.end + ')';
+  pill.onclick = function() { filterChapter(i, this); };
+  cfEl.appendChild(pill);
+});
+
+// ── Render all exercises ───────────────────────────────────────
+const mainEl = document.getElementById('main-content');
+renderAll();
+
+function renderAll() {
+  mainEl.innerHTML = '<div id="no-results">No questions found. Try a different search term.</div>';
+
+  var currentChapter = -1;
+
+  WM_DATA.forEach(function(sec) {
+    // Insert chapter banner when chapter changes
+    var chIdx = getChapterIdx(sec.num);
+    if (chIdx !== currentChapter && chIdx >= 0) {
+      currentChapter = chIdx;
+      var ch = CHAPTERS[chIdx];
+      var banner = document.createElement('div');
+      banner.className = 'chapter-banner';
+      banner.dataset.chapter = chIdx;
+      banner.innerHTML = '<span class="cn">CHAPTER ' + (chIdx+1) + '</span><span>' + ch.name + '</span>';
+      mainEl.appendChild(banner);
+    }
+
+    var section = document.createElement('section');
+    section.className = 'hs';
+    section.id = sec.id;
+    section.dataset.chapter = chIdx;
+
+    var qHTML = '';
+    sec.questions.forEach(function(q) {
+      var ds_val = (q.q + ' ' + q.a + ' ' + sec.hw).toLowerCase();
+      qHTML += '<div class="qi" data-s="' + ds_val.replace(/"/g,'&quot;') + '">' +
+        '<div class="qr" onclick="t(this)">' +
+          '<span class="qn">' + q.n + '</span>' +
+          '<span class="qt">' + escH(q.q) + '</span>' +
+          '<span class="tb">▾</span>' +
+        '</div>' +
+        '<div class="ap">' +
+          '<div class="ab"><div class="al">✓ Answer</div><div class="at">' + escH(q.a) + '</div></div>' +
+          '<div class="rb"><div class="rl">⚡ Reason</div><div class="rt">' + escH(q.r) + '</div></div>' +
+        '</div></div>';
+    });
+
+    section.innerHTML =
+      '<div class="hh">' +
+        '<span class="hb">' + escH(sec.hw) + '</span>' +
+        '<div>' +
+          '<div class="ht">' + escH(sec.title) + '</div>' +
+          '<div class="hu">' + sec.questions.length + ' questions</div>' +
+        '</div>' +
+      '</div>' +
+      (sec.instruction ? '<div class="ins">' + escH(sec.instruction) + '</div>' : '') +
+      '<div class="sc">' +
+        '<button class="bs bsh" onclick="sa(\'' + sec.id + '\')">Show All</button>' +
+        '<button class="bs bsh2" onclick="ha(\'' + sec.id + '\')">Hide All</button>' +
+      '</div>' +
+      '<div id="qa-' + sec.id + '">' + qHTML + '</div>';
+
+    mainEl.appendChild(section);
+    markSeen(sec.id);
+  });
+}
+
+function getChapterIdx(num) {
+  for (var i = 0; i < CHAPTERS.length; i++) {
+    if (num >= CHAPTERS[i].start && num <= CHAPTERS[i].end) return i;
+  }
+  return -1;
+}
+
+// ── Chapter filter ─────────────────────────────────────────────
+function filterChapter(which, el) {
+  document.querySelectorAll('.cpill').forEach(function(p) {
+    p.classList.remove('active');
+    p.style.background = '';
+    p.style.color = '';
+    p.style.borderColor = '';
+  });
+  el.classList.add('active');
+
+  if (which === 'all') {
+    el.style.background = 'var(--ink)';
+    el.style.color = 'var(--goldl)';
+    document.querySelectorAll('.hs,.chapter-banner').forEach(function(s) {
+      s.style.display = '';
+    });
+  } else {
+    var ch = CHAPTERS[which];
+    document.querySelectorAll('.hs').forEach(function(s) {
+      var num = parseInt(s.id.replace('hw', ''));
+      s.style.display = (num >= ch.start && num <= ch.end) ? '' : 'none';
+    });
+    document.querySelectorAll('.chapter-banner').forEach(function(b) {
+      b.style.display = parseInt(b.dataset.chapter) === which ? '' : 'none';
+    });
+    // Scroll to first visible section
+    setTimeout(function() {
+      var first = document.querySelector('#hw' + ch.start);
+      if (first) first.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 100);
+  }
+}
+
+// ── Search override ────────────────────────────────────────────
+function ds(q) {
+  q = q.trim().toLowerCase();
+  document.querySelectorAll('.qi').forEach(function(el) {
+    el.classList.toggle('hidden', !!q && !el.dataset.s.includes(q));
+  });
+  document.querySelectorAll('.hs').forEach(function(s) {
+    var v = s.querySelectorAll('.qi:not(.hidden)').length;
+    s.style.display = (!!q && v === 0) ? 'none' : '';
+  });
+  document.querySelectorAll('.chapter-banner').forEach(function(b) {
+    var chIdx = parseInt(b.dataset.chapter);
+    if (isNaN(chIdx)) { b.style.display = ''; return; }
+    var ch = CHAPTERS[chIdx];
+    if (!ch) { b.style.display = ''; return; }
+    // Check if any hs in this chapter is visible
+    var anyVisible = false;
+    document.querySelectorAll('.hs').forEach(function(s) {
+      var num = parseInt(s.id.replace('hw',''));
+      if (num >= ch.start && num <= ch.end && s.style.display !== 'none') anyVisible = true;
+    });
+    b.style.display = anyVisible ? '' : 'none';
+  });
+  var total = document.querySelectorAll('.qi:not(.hidden)').length;
+  document.getElementById('no-results').style.display = (q && total === 0) ? 'block' : 'none';
+}
+
+function clearSearch() {
+  document.getElementById('sr').value = '';
+  ds('');
+}
+
+function escH(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

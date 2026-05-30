@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wren &amp; Martin — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/shared.css">
+<style>
+body{background:#f0ebe3}
+
+/* ── Admin Layout ── */
+.admin-wrap{display:flex;min-height:calc(100vh - 51px)}
+
+/* Sidebar */
+.sidebar{
+  width:220px;flex-shrink:0;background:var(--ink);
+  padding:1.5rem 0;position:sticky;top:51px;height:calc(100vh - 51px);
+  overflow-y:auto;border-right:3px solid var(--gold);
+  scrollbar-width:thin;scrollbar-color:var(--gold) transparent;
+}
+.sidebar-title{
+  font-family:'JetBrains Mono',monospace;font-size:.65rem;
+  color:#7a6a5a;text-transform:uppercase;letter-spacing:.1em;
+  padding:.4rem 1.2rem;margin-bottom:.5rem;
+}
+.nav-item{
+  display:block;padding:.6rem 1.2rem;
+  font-family:'JetBrains Mono',monospace;font-size:.75rem;
+  color:#b0a090;text-decoration:none;cursor:pointer;border:none;background:transparent;
+  width:100%;text-align:left;transition:all .12s;
+  border-left:3px solid transparent;
+}
+.nav-item:hover{color:var(--goldl);background:rgba(184,134,11,.08);border-left-color:var(--gold)}
+.nav-item.active{color:var(--goldl);background:rgba(184,134,11,.12);border-left-color:var(--gold)}
+.nav-sep{height:1px;background:rgba(184,134,11,.15);margin:.5rem 0}
+
+/* Main area */
+.main-area{flex:1;padding:1.5rem;overflow-x:hidden}
+
+/* ── Panel ── */
+.panel{display:none}
+.panel.active{display:block}
+
+/* ── Cards ── */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-card{
+  background:var(--paper);border-radius:10px;padding:1.2rem;
+  border:1.5px solid rgba(184,134,11,.2);box-shadow:var(--sh);
+}
+.stat-card .sc-icon{font-size:1.8rem;margin-bottom:.5rem}
+.stat-card .sc-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--gold)}
+.stat-card .sc-label{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:#7a6a5a;margin-top:.2rem}
+
+/* ── Section Table ── */
+.section-table-wrap{background:var(--paper);border-radius:10px;border:1.5px solid rgba(184,134,11,.2);overflow:hidden;box-shadow:var(--sh)}
+.tbl-header{
+  background:var(--ink);color:var(--goldl);
+  font-family:'JetBrains Mono',monospace;font-size:.7rem;
+  display:grid;grid-template-columns:80px 1fr 100px 120px 90px;
+  padding:.6rem 1rem;
+}
+.tbl-row{
+  display:grid;grid-template-columns:80px 1fr 100px 120px 90px;
+  padding:.5rem 1rem;border-bottom:1px solid #ece3d5;
+  font-size:.82rem;align-items:center;transition:background .1s;
+}
+.tbl-row:hover{background:rgba(184,134,11,.05)}
+.tbl-row:last-child{border-bottom:none}
+.hw-badge{
+  font-family:'JetBrains Mono',monospace;font-size:.63rem;font-weight:700;
+  background:var(--ink);color:var(--goldl);border-radius:3px;
+  padding:.1rem .38rem;display:inline-block;
+}
+.q-count{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--teal)}
+.view-btn{
+  font-family:'JetBrains Mono',monospace;font-size:.63rem;
+  background:var(--tb);color:var(--teal);border:1px solid #9acece;
+  border-radius:4px;padding:.22rem .55rem;cursor:pointer;transition:all .12s;
+}
+.view-btn:hover{background:var(--teal);color:#fff}
+
+/* ── Search box ── */
+.admin-search{
+  display:flex;gap:.5rem;margin-bottom:1rem;
+}
+.admin-search input{
+  flex:1;padding:.55rem .9rem;
+  font-family:'Source Serif 4',serif;font-size:.88rem;
+  border:2px solid rgba(184,134,11,.3);border-radius:6px;
+  background:var(--paper);color:var(--ink);outline:none;
+}
+.admin-search input:focus{border-color:var(--gold)}
+
+/* ── Students panel ── */
+.student-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem}
+.student-card{
+  background:var(--paper);border-radius:10px;padding:1.2rem;
+  border:1.5px solid rgba(184,134,11,.2);box-shadow:var(--sh);
+}
+.student-card .s-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700}
+.student-card .s-user{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--teal);margin:.25rem 0 .8rem}
+.s-field{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;font-size:.82rem}
+.s-field label{color:#7a6a5a;font-family:'JetBrains Mono',monospace;font-size:.68rem}
+.s-field span{font-weight:600}
+.badge-active{background:#e8f5e8;color:var(--green);border:1px solid var(--green);border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:.62rem;padding:.1rem .45rem}
+
+/* ── Page title ── */
+.page-title{
+  font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;
+  color:var(--ink);margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem;
+}
+.page-title span{color:var(--gold)}
+
+/* ── Chapter summary ── */
+.chapter-summary{
+  background:var(--paper);border-radius:10px;padding:1.2rem;
+  border:1.5px solid rgba(184,134,11,.2);box-shadow:var(--sh);margin-bottom:1rem;
+}
+.chapter-summary h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:.8rem;color:var(--ink)}
+.chapter-row{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid #ece3d5;font-size:.82rem}
+.chapter-row:last-child{border-bottom:none}
+.ch-bar{height:6px;border-radius:3px;background:rgba(184,134,11,.15);margin-top:.15rem;overflow:hidden}
+.ch-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--teal))}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="brand">
+    ⚙️ <span>Wren &amp; Martin — Admin Dashboard</span>
+  </div>
+  <div class="user-info">
+    <span>🔑 <span id="admin-display">Admin</span></span>
+    <button class="logout-btn" onclick="logout()">⬅ Logout</button>
+  </div>
+</div>
+
+<div class="admin-wrap">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-title">Navigation</div>
+    <button class="nav-item active" onclick="showPanel('overview',this)">📊 Overview</button>
+    <button class="nav-item" onclick="showPanel('sections',this)">📋 All Sections</button>
+    <button class="nav-item" onclick="showPanel('students',this)">👥 Students</button>
+    <button class="nav-item" onclick="showPanel('chapters',this)">📖 Chapters</button>
+    <div class="nav-sep"></div>
+    <div class="sidebar-title">Quick Links</div>
+    <a class="nav-item" href="../exercises/student.html" target="_blank">🔗 Student View</a>
+    <a class="nav-item" href="../index.html">🏠 Main Page</a>
+  </nav>
+
+  <!-- Main Area -->
+  <div class="main-area">
+
+    <!-- ── OVERVIEW PANEL ── -->
+    <div class="panel active" id="panel-overview">
+      <div class="page-title">📊 Dashboard <span>Overview</span></div>
+
+      <div class="card-grid" id="stat-cards">
+        <div class="stat-card">
+          <div class="sc-icon">📚</div>
+          <div class="sc-num">267</div>
+          <div class="sc-label">Total Sections (HW #63–329)</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon">❓</div>
+          <div class="sc-num">3187</div>
+          <div class="sc-label">Total Questions</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon">✅</div>
+          <div class="sc-num">3187</div>
+          <div class="sc-label">Answers + Grammar Rules</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon">👥</div>
+          <div class="sc-num" id="student-count">6</div>
+          <div class="sc-label">Registered Students</div>
+        </div>
+      </div>
+
+      <!-- Top sections by question count -->
+      <div class="section-table-wrap">
+        <div style="padding:.8rem 1rem;background:var(--cream);border-bottom:1.5px solid rgba(184,134,11,.2)">
+          <strong style="font-family:'Playfair Display',serif">Top Sections by Question Count</strong>
+        </div>
+        <div class="tbl-header">
+          <span>HW #</span><span>Title</span><span>Questions</span><span>Chapter</span><span>Action</span>
+        </div>
+        <div id="top-sections"></div>
+      </div>
+    </div>
+
+    <!-- ── SECTIONS PANEL ── -->
+    <div class="panel" id="panel-sections">
+      <div class="page-title">📋 All <span>Sections</span></div>
+      <div class="admin-search">
+        <input type="text" id="sec-search" placeholder="🔍 Search sections by title or HW number..." oninput="filterSections(this.value)">
+      </div>
+      <div class="section-table-wrap">
+        <div class="tbl-header">
+          <span>HW #</span><span>Title / Instruction</span><span>Questions</span><span>Chapter</span><span>Action</span>
+        </div>
+        <div id="all-sections"></div>
+      </div>
+    </div>
+
+    <!-- ── STUDENTS PANEL ── -->
+    <div class="panel" id="panel-students">
+      <div class="page-title">👥 Student <span>Management</span></div>
+      <div class="student-grid" id="student-list"></div>
+    </div>
+
+    <!-- ── CHAPTERS PANEL ── -->
+    <div class="panel" id="panel-chapters">
+      <div class="page-title">📖 Chapter <span>Summary</span></div>
+      <div id="chapter-list"></div>
+    </div>
+
+  </div><!-- /.main-area -->
+</div><!-- /.admin-wrap -->
+
+<button id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Top">↑</button>
+
+<script src="../js/exercises_data.js"></script>
+<script src="../js/index_data.js"></script>
+<script src="../js/shared.js"></script>
+<script>
+// ── Auth ──────────────────────────────────────────────────────
+const adminUser = requireRole('admin');
+if (adminUser) document.getElementById('admin-display').textContent = adminUser;
+
+// ── Students DB (same as login page) ─────────────────────────
+const STUDENTS = [
+  { name:'Student (Demo)', user:'student',  pass:'wren123',   class:'Class 9' },
+  { name:'Rahul Sharma',   user:'rahul',    pass:'rahul2024', class:'Class 9' },
+  { name:'Priya Singh',    user:'priya',    pass:'priya2024', class:'Class 10' },
+  { name:'Amit Verma',     user:'amit',     pass:'amit2024',  class:'Class 10' },
+  { name:'Sneha Patel',    user:'sneha',    pass:'sneha2024', class:'Class 9'  },
+  { name:'Rohit Kumar',    user:'rohit',    pass:'rohit2024', class:'Class 11' },
+];
+document.getElementById('student-count').textContent = STUDENTS.length;
+
+// ── Chapter defs ───────────────────────────────────────────────
+const CHAPTERS = [
+  { name:'Subject & Predicate',   start:63,  end:69  },
+  { name:'Parts of Speech',       start:70,  end:89  },
+  { name:'Nouns & Pronouns',      start:90,  end:119 },
+  { name:'Adjectives',            start:120, end:139 },
+  { name:'Verbs & Tenses',        start:140, end:179 },
+  { name:'Adverbs',               start:180, end:199 },
+  { name:'Prepositions',          start:200, end:219 },
+  { name:'Conjunctions',          start:220, end:239 },
+  { name:'Sentences & Clauses',   start:240, end:269 },
+  { name:'Direct & Indirect',     start:270, end:289 },
+  { name:'Active & Passive',      start:290, end:309 },
+  { name:'Composition & Essays',  start:310, end:329 },
+];
+
+function getChapter(num) {
+  for (var i = 0; i < CHAPTERS.length; i++) {
+    if (num >= CHAPTERS[i].start && num <= CHAPTERS[i].end) return CHAPTERS[i].name;
+  }
+  return 'Other';
+}
+
+// ── Panel switching ────────────────────────────────────────────
+function showPanel(id, el) {
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+  document.getElementById('panel-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+// ── Render overview top sections ──────────────────────────────
+var sorted = [...WM_DATA].sort(function(a,b){return b.questions.length - a.questions.length});
+var topEl = document.getElementById('top-sections');
+sorted.slice(0,15).forEach(function(sec) {
+  var row = document.createElement('div');
+  row.className = 'tbl-row';
+  row.innerHTML =
+    '<span><span class="hw-badge">' + escH(sec.hw) + '</span></span>' +
+    '<span style="font-size:.81rem">' + escH(sec.title) + '</span>' +
+    '<span class="q-count">' + sec.questions.length + '</span>' +
+    '<span style="font-size:.76rem;color:#7a6a5a">' + escH(getChapter(sec.num)) + '</span>' +
+    '<span><button class="view-btn" onclick="window.open(\'../exercises/student.html#' + sec.id + '\',\'_blank\')">View →</button></span>';
+  topEl.appendChild(row);
+});
+
+// ── Render all sections ────────────────────────────────────────
+var allSecEl = document.getElementById('all-sections');
+var allRows = [];
+WM_DATA.forEach(function(sec) {
+  var row = document.createElement('div');
+  row.className = 'tbl-row';
+  row.dataset.search = (sec.hw + ' ' + sec.title + ' ' + sec.instruction).toLowerCase();
+  row.innerHTML =
+    '<span><span class="hw-badge">' + escH(sec.hw) + '</span></span>' +
+    '<span style="font-size:.81rem"><strong>' + escH(sec.title) + '</strong>' +
+      (sec.instruction ? '<br><span style="font-size:.72rem;color:#7a6a5a;font-style:italic">' + escH(sec.instruction.substring(0,60)) + (sec.instruction.length>60?'…':'') + '</span>' : '') +
+    '</span>' +
+    '<span class="q-count">' + sec.questions.length + '</span>' +
+    '<span style="font-size:.76rem;color:#7a6a5a">' + escH(getChapter(sec.num)) + '</span>' +
+    '<span><button class="view-btn" onclick="window.open(\'../exercises/student.html#' + sec.id + '\',\'_blank\')">View →</button></span>';
+  allSecEl.appendChild(row);
+  allRows.push(row);
+});
+
+function filterSections(q) {
+  q = q.trim().toLowerCase();
+  allRows.forEach(function(r) {
+    r.style.display = (!q || r.dataset.search.includes(q)) ? '' : 'none';
+  });
+}
+
+// ── Render students ────────────────────────────────────────────
+var slEl = document.getElementById('student-list');
+STUDENTS.forEach(function(s) {
+  var card = document.createElement('div');
+  card.className = 'student-card';
+  card.innerHTML =
+    '<div class="s-name">' + escH(s.name) + '</div>' +
+    '<div class="s-user">@' + s.user + '</div>' +
+    '<div class="s-field"><label>Class</label><span>' + s.class + '</span></div>' +
+    '<div class="s-field"><label>Username</label><span style="font-family:\'JetBrains Mono\',monospace;font-size:.75rem">' + s.user + '</span></div>' +
+    '<div class="s-field"><label>Status</label><span class="badge-active">✓ Active</span></div>';
+  slEl.appendChild(card);
+});
+
+// ── Render chapters ────────────────────────────────────────────
+var chEl = document.getElementById('chapter-list');
+CHAPTERS.forEach(function(ch, i) {
+  var secs = WM_DATA.filter(function(s){ return s.num >= ch.start && s.num <= ch.end; });
+  var totalQ = secs.reduce(function(acc,s){ return acc + s.questions.length; }, 0);
+  var pct = Math.round(totalQ / 3187 * 100);
+
+  var div = document.createElement('div');
+  div.className = 'chapter-summary';
+  div.innerHTML =
+    '<h3>Chapter ' + (i+1) + ': ' + escH(ch.name) + ' (HW #' + ch.start + '–' + ch.end + ')</h3>' +
+    '<div class="chapter-row">' +
+      '<span>Sections</span><strong>' + secs.length + ' HW exercises</strong>' +
+    '</div>' +
+    '<div class="chapter-row">' +
+      '<span>Questions</span><strong>' + totalQ + '</strong>' +
+    '</div>' +
+    '<div class="chapter-row">' +
+      '<span>% of Total</span><strong>' + pct + '%</strong>' +
+    '</div>' +
+    '<div class="ch-bar"><div class="ch-fill" style="width:' + pct + '%"></div></div>';
+  chEl.appendChild(div);
+});
+
+function escH(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
